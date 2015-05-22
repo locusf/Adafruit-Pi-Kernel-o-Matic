@@ -1,0 +1,98 @@
+/*
+ * Device Tree overlay for pitft by Adafruit
+ *
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+        compatible = "brcm,bcm2835", "brcm,bcm2708", "brcm,bcm2709";
+
+        fragment@0 {
+                target = <&spi0>;
+                __overlay__ {
+                        status = "okay";
+
+                        spidev@0{
+                                status = "disabled";
+                        };
+
+                        spidev@1{
+                                status = "disabled";
+                        };
+                };
+        };
+	fragment@1 {
+                target = <&gpio>;
+                __overlay__ {
+                        pitft_pins: pitft_pins {
+                                brcm,pins = <19 25>;
+                                brcm,function = <1 1>; /* in out */
+                                brcm,pull = <0 0>; /* pullup none */
+                        };
+                };
+        };
+        fragment@2 {
+                target = <&spi0>;
+                __overlay__ {
+                        /* needed to avoid dtc warning */
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+
+                        pitft: pitft@0{
+                                compatible = "himax,hx8357b", "himax,hx8357";
+                                reg = <0>;
+				pinctrl-names = "default";
+                                pinctrl-0 = <&pitft_pins>;
+				spi-cpol;
+				spi-cpha;
+                                spi-max-frequency = <2000000>;
+				reset-gpios = <&gpio 19 0>;
+				dc-gpios = <&gpio 25 0>;
+				buswidth = <8>;
+				fps = <20>;
+				debug = <1>;
+				regwidth = <16>;
+                        };
+		};
+        };
+
+/*	fragment@2 {
+		target-path = "soc";
+		__overlay__ {
+		#address-cells = <1>;
+		#size-cells = <0>;
+			lcdif@3f204000 {
+				compatible = "fsl,imx28-lcdif";
+				display = <&display0>;
+				status = "ok";
+				reg = <0x3f204000 2000>;
+				interrupts = <38 86>;
+				display0: display0 {
+					bits-per-pixel = <32>;
+					bus-width = <8>;
+
+					display-timings {
+						native-mode = <&timing0>;
+						timing0: timing0 {
+							clock-frequency = <9216000>;
+							hactive = <320>;
+							vactive = <480>;
+							hback-porch = <2>;
+							hfront-porch = <2>;
+							vback-porch = <2>;
+							vfront-porch = <2>;
+							hsync-len = <15>;
+							vsync-len = <15>;
+							hsync-active = <0>;
+							vsync-active = <0>;
+							de-active = <1>;
+							pixelclk-active = <1>;
+						};
+					};
+				};
+			};
+		};
+	};*/
+};
